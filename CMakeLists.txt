@@ -4,5 +4,5 @@ project(SubscriptionApp)
 
 set(CMAKE_CXX_STANDARD 11)
 
-add_executable(SubscriptionApp main.cpp Subscription.cpp)
+add_executable(SubscriptionApp src/main.cpp src/Subscription.cpp)
 
