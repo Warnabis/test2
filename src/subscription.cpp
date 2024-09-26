@@ -1,12 +1,39 @@
 #include "Subscription.h"
 #include <conio.h>
-#include <algorithm>
 #include <limits>
 
-void Subscription::wait() const {
+Subscription::Subscription() : id(0), price(0.0), days(0) {}
+
+void wait() {
     std::cout << "\nНажмите любую клавишу, чтобы продолжить";
     _getch();
     system("cls");
+}
+
+void choose(int choice, Subscription& service, Subscription*& services, int& size, Subscription*& selectedservice) {
+    switch (choice) {
+    case 1:
+        service.create(services, size);
+        break;
+    case 2:
+        service.read(services, size);
+        break;
+    case 3:
+        service.update(services, size);
+        break;
+    case 4:
+        service.deletes(services, size);
+        break;
+    case 5:
+        service.workout(services, size, selectedservice);
+        break;
+    case 6:
+        std::cout << "Выход из программы..." << std::endl;
+        break;
+    default:
+        std::cout << "Неверный выбор. Попробуйте снова" << std::endl;
+        break;
+    }
 }
 
 void Subscription::input() {
@@ -25,16 +52,26 @@ void Subscription::output() const {
     std::cout << "Айди: " << id << " Имя: " << name << " Цена: " << price << " Кол-во занятий в услуге: " << days << std::endl;
 }
 
-void Subscription::create(std::vector<Subscription>& services) const {
+void Subscription::create(Subscription*& services, int& size) {
     Subscription newservice;
     newservice.input();
-    services.push_back(newservice);
+
+    Subscription* newServices = new Subscription[size + 1];
+    for (int i = 0; i < size; i++) {
+        newServices[i] = services[i];
+    }
+    newServices[size] = newservice;
+
+    delete[] services; 
+    services = newServices;
+    size++;
+
     std::cout << "Объект создан\n";
     wait();
 }
 
-void Subscription::read(const std::vector<Subscription>& services) const {
-    if (services.empty()) {
+void Subscription::read(const Subscription* services, int size) const {
+    if (size == 0) {
         std::cout << "Нет объектов для отображения" << std::endl;
         wait();
         return;
@@ -45,16 +82,17 @@ void Subscription::read(const std::vector<Subscription>& services) const {
     std::cin >> checkname;
 
     if (checkname == "all") {
-        for (size_t i = 0; i < services.size(); i++) {
+        for (int i = 0; i < size; i++) {
             std::cout << "Объект " << i + 1 << ": ";
             services[i].output();
             std::cout << std::endl;
         }
-    } else {
+    }
+    else {
         bool found = false;
-        for (const auto& service : services) {
-            if (service.name == checkname) {
-                service.output();
+        for (int i = 0; i < size; i++) {
+            if (services[i].name == checkname) {
+                services[i].output();
                 found = true;
                 break;
             }
@@ -66,8 +104,8 @@ void Subscription::read(const std::vector<Subscription>& services) const {
     wait();
 }
 
-void Subscription::update(std::vector<Subscription>& services) const {
-    if (services.empty()) {
+void Subscription::update(Subscription* services, int size) {
+    if (size == 0) {
         std::cout << "Нет объектов для обновления" << std::endl;
         return;
     }
@@ -77,9 +115,9 @@ void Subscription::update(std::vector<Subscription>& services) const {
     std::cin >> checkname;
 
     bool found = false;
-    for (auto& service : services) {
-        if (service.name == checkname) {
-            service.input();
+    for (int i = 0; i < size; i++) {
+        if (services[i].name == checkname) {
+            services[i].input();
             found = true;
             break;
         }
@@ -90,8 +128,8 @@ void Subscription::update(std::vector<Subscription>& services) const {
     wait();
 }
 
-void Subscription::deletes(std::vector<Subscription>& services) const {
-    if (services.empty()) {
+void Subscription::deletes(Subscription*& services, int& size) {
+    if (size == 0) {
         std::cout << "Нет объектов для удаления" << std::endl;
         wait();
         return;
@@ -102,24 +140,34 @@ void Subscription::deletes(std::vector<Subscription>& services) const {
     std::cin >> checkname;
 
     if (checkname == "all") {
-        services.clear();
+        delete[] services; 
+        services = nullptr;
+        size = 0;
         std::cout << "Все объекты удалены" << std::endl;
-    } else {
-        auto iterator = std::remove_if(services.begin(), services.end(),
-            [&checkname](const Subscription& service) { return service.name == checkname; });
-
-        if (iterator != services.end()) {
-            services.erase(iterator, services.end());
-            std::cout << "Услуга \"" << checkname << "\" удалена" << std::endl;
-        } else {
-            std::cout << "Услуга с названием \"" << checkname << "\" не найдена" << std::endl;
+    }
+    else {
+        for (int i = 0; i < size; i++) {
+            if (services[i].name == checkname) {
+                Subscription* newServices = new Subscription[size - 1];
+                for (int j = 0, k = 0; j < size; j++) {
+                    if (j != i) {
+                        newServices[k++] = services[j];
+                    }
+                }
+                delete[] services; 
+                services = newServices;
+                size--;
+                std::cout << "Услуга \"" << checkname << "\" удалена" << std::endl;
+                wait();
+                return;
+            }
         }
+        std::cout << "Услуга с названием \"" << checkname << "\" не найдена" << std::endl;
     }
     wait();
 }
-
-void Subscription::workout(std::vector<Subscription>& services, Subscription*& selectedservice) const {
-    if (services.empty()) {
+void Subscription::workout(Subscription* services, int size, Subscription*& selectedservice) const {
+    if (size == 0) {
         std::cout << "Нет доступных услуг для выбора" << std::endl;
         wait();
         return;
@@ -132,8 +180,9 @@ void Subscription::workout(std::vector<Subscription>& services, Subscription*& s
         std::cin >> checkname;
 
         bool found = false;
-        for (auto& service : services) {
-            if (service.name == checkname) {selectedservice = &service;
+        for (int i = 0; i < size; i++) {
+            if (services[i].name == checkname) {
+                selectedservice = &services[i];
                 std::cout << "Услуга \"" << selectedservice->name << "\" выбрана." << std::endl;
                 found = true;
                 break;
@@ -157,36 +206,37 @@ void Subscription::workout(std::vector<Subscription>& services, Subscription*& s
         }
 
         switch (choice) {
-            case 1:
-                if (selectedservice->days > 0) {
-                    selectedservice->days--;
-                    std::cout << "Тренировка проведена. Осталось дней: " << selectedservice->days << std::endl;
-                } else {
-                    std::cout << "У этой услуги больше не осталось доступных дней для тренировок" << std::endl;
-                }
-                wait();
-                break;
+        case 1:
+            if (selectedservice->days > 0) {
+                selectedservice->days--;
+                std::cout << "Тренировка проведена. Осталось дней: " << selectedservice->days << std::endl;
+            }
+            else {
+                std::cout << "У этой услуги больше не осталось доступных дней для тренировок" << std::endl;
+            }
+            wait();
+            break;
 
-            case 2:
-                std::cout << "Выбранная услуга: \"" << selectedservice->name << "\"\nОсталось дней: " << selectedservice->days << std::endl;
-                wait();
-                break;
+        case 2:
+            std::cout << "Выбранная услуга: \"" << selectedservice->name << "\"\nОсталось дней: " << selectedservice->days << std::endl;
+            wait();
+            break;
 
-            case 3:
-                std::cout << "Выход из услуги \"" << selectedservice->name << "\"." << std::endl;
-                selectedservice = nullptr;
-                wait();
-                return;
+        case 3:
+            std::cout << "Выход из услуги \"" << selectedservice->name << "\"." << std::endl;
+            selectedservice = nullptr;
+            wait();
+            return;
 
-            case 4:
-                std::cout << "Возвращение в главное меню..." << std::endl;
-                wait();
-                break;
+        case 4:
+            std::cout << "Возвращение в главное меню..." << std::endl;
+            wait();
+            break;
 
-            default:
-                std::cout << "Неверный выбор. Попробуйте снова" << std::endl;
-                wait();
-                break;
+        default:
+            std::cout << "Неверный выбор. Попробуйте снова" << std::endl;
+            wait();
+            break;
         }
     } while (choice != 4);
 }
