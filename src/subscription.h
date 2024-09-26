@@ -22,3 +22,5 @@ public:
 
 void wait();
 void choose(int choice, Subscription& service, Subscription*& services, int& size, Subscription*& selectedservice);
+
+#endif
