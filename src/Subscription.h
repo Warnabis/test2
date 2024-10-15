@@ -35,8 +35,10 @@ public:
     float getPrice() const { return price; }
     int getDays() const { return days; }
 
-    void savetofile(std::ofstream& ofs) const;
-    void loadfromfile(std::ifstream& ifs);
+    void saveToFile(std::ofstream& ofs) const;
+    void loadFromFile(std::ifstream& ifs);
+    void loadAllSubscriptionsFromFile(std::vector<Subscription>& subscriptions);
+    void saveAllSubscriptionsToFile(const std::vector<Subscription>& subscriptions);
 
 
     void create(std::vector<Subscription>& services) const;
@@ -44,7 +46,7 @@ public:
     void update(std::vector<Subscription>& services) const;
     void deletes(std::vector<Subscription>& services) const;
     void workout(std::vector<Subscription>& services, Subscription*& selectedservice) const;
-    void compareprices(const std::vector<Subscription>& services) const;
+    void comparePrices(const std::vector<Subscription>& services) const;
 
     friend bool operator==(const Subscription& lhs, const Subscription& rhs) {
         return lhs.price == rhs.price;

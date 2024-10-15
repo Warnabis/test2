@@ -9,7 +9,7 @@ protected:
     std::string password;
 
 public:
-    Person(const std::string& login, const std::string& password); // Объявление конструктора
+    Person(const std::string& login, const std::string& password); 
 
     std::string getLogin() const;
     std::string getPassword() const;

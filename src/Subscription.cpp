@@ -4,14 +4,14 @@
 
 using namespace std;
 
-void Subscription::savetofile(ofstream& ofs) const {
+void Subscription::saveToFile(ofstream& ofs) const {
     ofs << id << endl;
     ofs << name << endl;
     ofs << price << endl;
     ofs << days << endl;
 }
 
-void Subscription::loadfromfile(ifstream& ifs) {
+void Subscription::loadFromFile(ifstream& ifs) {
     ifs >> id;
     ifs.ignore();
     getline(ifs, name);
@@ -215,7 +215,7 @@ void Subscription::workout(vector<Subscription>& services, Subscription*& select
     } while (choice != 4);
 }
 
-void Subscription::compareprices(const vector<Subscription>& services) const {
+void Subscription::comparePrices(const vector<Subscription>& services) const {
     if (services.size() < 2) {
         cout << "Для сравнения цен нужно минимум две услуги." << endl;
         wait();
@@ -263,53 +263,39 @@ void Subscription::compareprices(const vector<Subscription>& services) const {
     wait();
 }
 
-void savealltofile(const vector<Subscription>& services) {
+void saveAllSubscriptionsToFile(const vector<Subscription>& subscriptions) {
     ofstream ofs("subscriptions.txt");
     if (!ofs) {
-        cout << "Ошибка открытия файла для записи!" << endl;
-        wait();
+        cout << "Ошибка открытия файла для записи!\n";
         return;
     }
 
-    for (const auto& service : services) {
-        service.savetofile(ofs);
+    for (const auto& sub : subscriptions) {
+        sub.saveToFile(ofs);
     }
 
     ofs.close();
-    cout << "Услуги сохранены в файл subscriptions.txt." << endl;
-    wait();
+    cout << "Данные о подписках успешно сохранены в файл.\n";
 }
 
-size_t loadallfromfile(vector<Subscription>& services) {
+void loadAllSubscriptionsFromFile(vector<Subscription>& subscriptions) {
     ifstream ifs("subscriptions.txt");
     if (!ifs) {
-        cout << "Ошибка открытия файла для чтения!" << endl;
-        return 0;
+        cout << "Ошибка открытия файла для чтения!\n";
+        return;
     }
 
-    services.clear();
-
-    if (ifs.peek() == ifstream::traits_type::eof()) {
-        cout << "Файл subscriptions.txt пуст." << endl;
-        ifs.close();
-        return 0;
-    }
+    subscriptions.clear();
 
     while (true) {
-        Subscription temp;
-        temp.loadfromfile(ifs);
-
-
+        Subscription tempSub;
+        tempSub.loadFromFile(ifs);
         if (ifs.eof()) {
             break;
         }
-
-        services.push_back(temp);
+        subscriptions.push_back(tempSub);
     }
 
     ifs.close();
-    cout << "Услуги загружены из файла subscriptions.txt." << endl;
-    wait();
-
-    return services.size();
+    cout << "Данные о подписках загружены из файла.\n";
 }

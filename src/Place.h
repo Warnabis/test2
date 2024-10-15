@@ -6,7 +6,7 @@
 #include "Functions.h"
 #include "Subscription.h" 
 
-class Place : public FileOperations<Place> {
+class Place : public Activation {
 private:
     std::string name;
     std::string address;
@@ -42,8 +42,17 @@ public:
     void deletes(std::vector<Place>& places) const;
 
     
-    void saveToFile(std::ofstream& ofs, const std::vector<Place>& items) const override;
-    void loadFromFile(std::ifstream& ifs, std::vector<Place>& items) override;
+    void saveToFile(std::ofstream& ofs) const;
+    void loadFromFile(std::ifstream& ifs);
+    void loadAllPlacesFromFile(std::vector<Place>& places);
+    void saveAllPlacesToFile(const std::vector<Place>& places);
+
+    friend std::ostream& operator<<(std::ostream& os, const Place& place) {
+        os << "Название: " << place.name << "\n"
+            << "Адрес: " << place.address << "\n"
+            << "Часы работы: " << place.hours << "\n";
+        return os;
+    }
 };
 
 #endif

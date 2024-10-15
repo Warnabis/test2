@@ -3,123 +3,168 @@
 #include <fstream>
 #include <algorithm>
 
-// Метод для создания нового зала
-void Place::create(std::vector<Place>&places) const {
-    std::string name, address, hours;
-    std::cout << "Введите название зала: ";
-    std::cin >> name;
-    std::cout << "Введите адрес зала: ";
-    std::cin >> address;
-    std::cout << "Введите часы работы: ";
-    std::cin >> hours;
+using namespace std;
 
-    Place newPlace(name, address, hours);
+void Place::saveToFile(ofstream& ofs) const {
+    ofs << name << endl;
+    ofs << address << endl;
+    ofs << hours << endl;
+    ofs << activated << endl;
+    ofs << subscriptions.size() << endl; 
+    for (const auto& sub : subscriptions) {
+        sub.saveToFile(ofs); 
+    }
+}
+
+
+void Place::loadFromFile(ifstream& ifs) {
+    getline(ifs, name);
+    getline(ifs, address);
+    getline(ifs, hours);
+    ifs >> activated;
+    size_t subCount;
+    ifs >> subCount;
+    ifs.ignore();
+    subscriptions.clear(); 
+    for (size_t i = 0; i < subCount; i++) {
+        Subscription sub;
+        sub.loadFromFile(ifs);  
+        subscriptions.push_back(sub);
+    }
+}
+
+
+void Place::addSubscription(const Subscription& sub) {
+    subscriptions.push_back(sub);
+}
+
+void Place::create(vector<Place>& places) const {
+    string placeName, placeAddress, placeHours;
+    bool placeActivated;
+
+    cout << "Введите название зала: ";
+    cin >> ws;
+    getline(cin, placeName);
+    cout << "Введите адрес зала: ";
+    getline(cin, placeAddress);
+    cout << "Введите часы работы: ";
+    getline(cin, placeHours);
+    cout << "Активировать зал? (1 - да, 0 - нет): ";
+    cin >> placeActivated;
+
+    Place newPlace(placeName, placeAddress, placeHours, placeActivated);
     places.push_back(newPlace);
-    std::cout << "Зал \"" << name << "\" добавлен.\n";
+
+    cout << "Зал успешно создан!\n";
 }
 
-// Метод для чтения информации о залах
-void Place::read(const std::vector<Place>& places) const {
+
+void Place::read(const vector<Place>& places) const {
     if (places.empty()) {
-        std::cout << "Нет доступных залов.\n";
+        cout << "Нет доступных залов для отображения.\n";
         return;
     }
 
+    cout << "Список залов:\n";
     for (const auto& place : places) {
-        std::cout << "Название: " << place.getName()
-            << ", Адрес: " << place.getAddress()
-            << ", Часы работы: " << place.getHours()
-            << ", Активирован: " << (place.isActivated() ? "Да" : "Нет") << "\n";
-
-        // Выводим подписки
-        const auto& subs = place.getSubscriptions();
-        if (!subs.empty()) {
-            std::cout << "Подписки:\n";
-            for (const auto& sub : subs) {
-                std::cout << "  - " << sub.getName() << "\n"; // Предполагается, что есть метод getName() в Subscription
-            }
+        cout << place;
+        cout << "Подписки:\n";
+        for (const auto& sub : place.getSubscriptions()) {
+            cout << sub;
         }
+        cout << endl;
     }
 }
 
-// Метод для обновления информации о зале
-void Place::update(std::vector<Place>& places) const {
-    if (places.empty()) {
-        std::cout << "Нет залов для обновления.\n";
-        return;
-    }
+void Place::update(vector<Place>& places) const {
+    string placeName;
+    cout << "Введите название зала для обновления: ";
+    cin >> ws;
+    getline(cin, placeName);
 
-    std::string name;
-    std::cout << "Введите название зала для обновления: ";
-    std::cin >> name;
-
-    auto it = std::find_if(places.begin(), places.end(), [&](const Place& place) {
-        return place.getName() == name;
+    auto it = find_if(places.begin(), places.end(), [&](const Place& p) {
+        return p.getName() == placeName;
         });
 
     if (it != places.end()) {
-        std::cout << "Введите новый адрес: ";
-        std::string newAddress;
-        std::cin >> newAddress;
+        string newAddress, newHours;
+        bool newActivated;
 
-        std::cout << "Введите новые часы работы: ";
-        std::string newHours;
-        std::cin >> newHours;
+        cout << "Введите новый адрес: ";
+        getline(cin, newAddress);
+        cout << "Введите новые часы работы: ";
+        getline(cin, newHours);
+        cout << "Активировать зал? (1 - да, 0 - нет): ";
+        cin >> newActivated;
 
-        it->deactivate(); // Пример, как можно активировать/деактивировать зал
-        *it = Place(name, newAddress, newHours, it->isActivated()); // Обновление зала
-        std::cout << "Зал \"" << name << "\" обновлен.\n";
+        it->setAddress(newAddress);
+        it->setHours(newHours);
+        if (newActivated) {
+            it->activate();
+        }
+        else {
+            it->deactivate();
+        }
+
+        cout << "Зал успешно обновлён!\n";
     }
     else {
-        std::cout << "Зал с названием \"" << name << "\" не найден.\n";
+        cout << "Зал с таким названием не найден.\n";
     }
 }
 
-// Метод для удаления зала
-void Place::deletes(std::vector<Place>& places) const {
-    if (places.empty()) {
-        std::cout << "Нет залов для удаления.\n";
-        return;
-    }
+void Place::deletes(vector<Place>& places) const {
+    string placeName;
+    cout << "Введите название зала для удаления: ";
+    cin >> ws;
+    getline(cin, placeName);
 
-    std::string name;
-    std::cout << "Введите название зала для удаления: ";
-    std::cin >> name;
-
-    auto it = std::remove_if(places.begin(), places.end(), [&](const Place& place) {
-        return place.getName() == name;
+    auto it = remove_if(places.begin(), places.end(), [&](const Place& p) {
+        return p.getName() == placeName;
         });
 
     if (it != places.end()) {
         places.erase(it, places.end());
-        std::cout << "Зал \"" << name << "\" удален.\n";
+        cout << "Зал успешно удалён!\n";
     }
     else {
-        std::cout << "Зал с названием \"" << name << "\" не найден.\n";
+        cout << "Зал с таким названием не найден.\n";
     }
 }
 
-// Метод для сохранения зала в файл
-void Place::saveToFile(std::ofstream& ofs, const std::vector<Place>& items) const {
-    for (const auto& place : items) {
-        ofs << place.getName() << "\n"
-            << place.getAddress() << "\n"
-            << place.getHours() << "\n"
-            << place.isActivated() << "\n";
+void saveAllPlacesToFile(const vector<Place>& places) {
+    ofstream ofs("places.txt");
+    if (!ofs) {
+        cout << "Ошибка открытия файла для записи!\n";
+        return;
     }
+
+    for (const auto& place : places) {
+        place.saveToFile(ofs);
+    }
+
+    ofs.close();
+    cout << "Данные о залах успешно сохранены в файл.\n";
 }
 
-// Метод для загрузки залов из файла
-void Place::loadFromFile(std::ifstream& ifs, std::vector<Place>& items) {
-    std::string name, address, hours;
-    bool activated;
-
-    while (std::getline(ifs, name)) {
-        std::getline(ifs, address);
-        std::getline(ifs, hours);
-        ifs >> activated;
-        ifs.ignore(); // игнорируем символ новой строки после чтения bool
-
-        items.emplace_back(name, address, hours, activated);
+void loadAllPlacesFromFile(vector<Place>& places) {
+    ifstream ifs("places.txt");
+    if (!ifs) {
+        cout << "Ошибка открытия файла для чтения!\n";
+        return;
     }
+
+    places.clear();
+
+    while (true) {
+        Place tempPlace;
+        tempPlace.loadFromFile(ifs);
+        if (ifs.eof()) {
+            break;
+        }
+        places.push_back(tempPlace);
+    }
+
+    ifs.close();
+    cout << "Данные о залах загружены из файла.\n";
 }
