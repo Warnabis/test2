@@ -14,7 +14,7 @@ public:
     std::string getLogin() const;
     std::string getPassword() const;
 
-    virtual void showMenu() = 0;
+    void showMenu();
 };
 
 #endif

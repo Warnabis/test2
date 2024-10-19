@@ -1,53 +1,65 @@
 #ifndef SUBSCRIPTION_H
 #define SUBSCRIPTION_H
 
-#include <string>
 #include <iostream>
-#include <fstream>
+#include <string>
 #include <vector>
-#include "Functions.h"
-#include "Activation.h"
+#include <memory>
+#include <fstream>
 
+class Activation {
+public:
+    virtual void activate() = 0;
+    virtual void deactivate() = 0;
+    virtual bool isActivated() const = 0;
+    virtual ~Activation() = default;
+};
 
-
-class Subscription : public Activation{
-private:
+class Subscription : public Activation {
+protected:
     int id;
-    float price;
-    int days;
     std::string name;
+    double price;
+    int days;
     bool activated = false;
 
 public:
-    Subscription(int id = 0, float price = 0.0f, int days = 0, const std::string& name = "")
-        : id(id), price(price), days(days), name(name) {}
+    Subscription(int id = 0, const std::string& name = "", float price = 0.0f, int days = 0)
+        : id(id), name(name), price(price), days(days) {}
 
-    friend void wait();
-    void input();
-    friend void output(const Subscription& service);
+    virtual ~Subscription() = default;
 
-    
-    void setName(const std::string& name) { this->name = name; }
-    void setPrice(float price) { this->price = price; }
-    void setDays(int days) { this->days = days; }
+    virtual void display() const = 0;       // Чисто виртуальная функция
+    virtual void decrementDays() = 0;      // Чисто виртуальная функция
+    virtual bool isExpired() const = 0;     // Чисто виртуальная функция
 
     std::string getName() const { return name; }
-    float getPrice() const { return price; }
+    double getPrice() const { return price; }
     int getDays() const { return days; }
+    int getId() const { return id; }
 
-    void saveToFile(std::ofstream& ofs) const;
-    void loadFromFile(std::ifstream& ifs);
-    void loadAllSubscriptionsFromFile(std::vector<Subscription>& subscriptions);
-    void saveAllSubscriptionsToFile(const std::vector<Subscription>& subscriptions);
+    void setId(int newId) {
+        id = newId;
+    }
 
+    void setName(const std::string& newName) {
+        name = newName;
+    }
 
-    void create(std::vector<Subscription>& services) const;
-    void read(const std::vector<Subscription>& services) const;
-    void update(std::vector<Subscription>& services) const;
-    void deletes(std::vector<Subscription>& services) const;
-    void workout(std::vector<Subscription>& services, Subscription*& selectedservice) const;
-    void comparePrices(const std::vector<Subscription>& services) const;
+    void setPrice(double newPrice) {
+        price = newPrice;
+    }
 
+    void setDays(int newDays) {
+        days = newDays;
+    }
+
+    virtual void saveToFile(std::ofstream& ofs) const; // Сохранение подписки в файл
+    virtual void loadFromFile(std::ifstream& ifs);     // Загрузка подписки из файла
+
+    void comparePrices(const std::vector<std::shared_ptr<Subscription>>& services) const;
+
+    // Перегрузка операторов
     friend bool operator==(const Subscription& lhs, const Subscription& rhs) {
         return lhs.price == rhs.price;
     }
@@ -56,14 +68,19 @@ public:
         return lhs.price > rhs.price;
     }
 
-    friend std::ostream& operator<<(std::ostream& os, const Subscription& sub) {
-        os << "\n" << "Айди: " << sub.id << "\n" << "Имя: " << sub.name
-            << "\n" << "Цена: " << sub.price << "\n" << "Кол-во занятий: " << sub.days << "\n";
+    friend std::ostream& operator<<(std::ostream& os, const Subscription& subscription) {
+        os << subscription.id << ' ' << subscription.name << ' ' << subscription.price << ' ' << subscription.days;
         return os;
     }
 
+    friend std::istream& operator>>(std::istream& is, Subscription& subscription) {
+        is >> subscription.id >> subscription.name >> subscription.price >> subscription.days;
+        return is;
+    }
+
+    // Методы активации подписки
     void activate() override {
-        if (!activated) { 
+        if (!activated) {
             activated = true;
             std::cout << "Подписка \"" << name << "\" активирована." << std::endl;
         }
@@ -87,4 +104,4 @@ public:
     }
 };
 
-#endif 
+#endif

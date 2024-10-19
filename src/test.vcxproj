@@ -132,6 +132,9 @@
     <ClCompile Include="Place.cpp" />
     <ClCompile Include="Admin.cpp" />
     <ClCompile Include="Person.cpp" />
+    <ClCompile Include="LimitedSubscription.cpp" />
+    <ClCompile Include="UnlimitedSubscription.cpp" />
+    <ClCompile Include="SubscriptionList.cpp" />
     <ClCompile Include="User.cpp" />
     <ClCompile Include="Subscription.cpp" />
   </ItemGroup>
@@ -142,6 +145,9 @@
     <ClInclude Include="Functions.h" />
     <ClInclude Include="Activation.h" />
     <ClInclude Include="Admin.h" />
+    <ClInclude Include="LimitedSubscription.h" />
+    <ClInclude Include="UnlimitedSubscription.h" />
+    <ClInclude Include="SubscriptionList.h" />
     <ClInclude Include="Person.h" />
     <ClInclude Include="User.h" />
     <ClInclude Include="Place.h" />
